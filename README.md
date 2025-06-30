@@ -4,6 +4,10 @@
 
 使用之前默认你已经正常安装好了彩虹易支付和BEpusdt，这里不再赘述。
 
+## 配置截图
+
+![bepusdt](./doc/screenshot.png)
+
 ## 使用教程
 
 1. 点击[下载插件](https://github.com/v03413/Epay-BEpusdt/archive/refs/heads/main.zip)之后解压，
