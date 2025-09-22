@@ -4,39 +4,56 @@ class bepusdt_plugin
 {
     public static $info = [
         'name'     => 'bepusdt',
-        'showname' => 'BEpusdt USDT TRX收款',
+        'showname' => 'BEpusdt USDT/USDC 个人收款',
         'author'   => 'V03413',
         'link'     => 'https://github.com/v03413/BEpusdt',
-        'types'    => ['bepusdt',],
-        'inputs'   => [ //支付插件要求传入的参数以及参数显示名称，可选的有appid,appkey,appsecret,appurl,appmchid
-                        'appurl'    => [
-                            'name' => '接口地址',
-                            'type' => 'input',
-                            'note' => '必须以http://或https://开头，以/结尾',
-                        ],
-                        'appkey'    => [
-                            'name' => '认证Token',
-                            'type' => 'input',
-                            'note' => '搭建BEpusdt时填写的 auth_token 参数',
-                        ],
-                        'appid'     => [
-                            'name'    => '收款类型',
-                            'type'    => 'select',
-                            'options' => [
-                                'tron.trx'     => 'TRON・TRX',
-                                'usdt.trc20'   => 'USDT・TRC20',
-                                'usdt.polygon' => 'USDT・Polygon',
-                                'usdt.bep20'   => 'USDT・BEP20',
-                                'usdt.xlayer'  => 'USDT・X-Layer',
-                                'usdt.erc20'   => 'USDT・ERC20',
-
-                            ],
-                        ],
-                        'appsecret' => [
-                            'name' => '收款地址',
-                            'type' => 'input',
-                            'note' => '可以留空，留空则由BEpusdt自动分配，切勿乱填 注意空格',
-                        ],
+        'types'    => [
+            // 此列表可能存在变动，以此为准 https://github.com/v03413/BEpusdt/blob/main/docs/trade-type.md
+            'tron.trx',
+            'usdt.trc20',
+            'usdc.trc20',
+            'usdt.polygon',
+            'usdc.polygon',
+            'usdt.arbitrum',
+            'usdc.arbitrum',
+            'usdt.erc20',
+            'usdc.erc20',
+            'usdt.bep20',
+            'usdc.bep20',
+            'usdt.xlayer',
+            'usdc.xlayer',
+            'usdc.base',
+            'usdt.solana',
+            'usdc.solana',
+            'usdt.aptos',
+            'usdc.aptos',
+        ],
+        'inputs'   => [
+            'appurl'  => [
+                'name' => '接口地址',
+                'type' => 'input',
+                'note' => '必须以http://或https://开头，以/结尾',
+            ],
+            'appkey'  => [
+                'name' => '认证Token',
+                'type' => 'input',
+                'note' => '搭建BEpusdt时填写的 auth_token 参数',
+            ],
+            'address' => [
+                'name' => '收款地址',
+                'type' => 'input',
+                'note' => '可以留空 留空则由BEpusdt自动分配，切勿乱填 注意空格',
+            ],
+            'timeout' => [
+                'name' => '订单超时',
+                'type' => 'input',
+                'note' => '可以留空 推荐填写 1200',
+            ],
+            'rate'    => [
+                'name' => '订单汇率',
+                'type' => 'input',
+                'note' => '可以留空 例如：7.4 ~1.02 ~0.98（不明白切勿乱填）',
+            ],
         ],
         'select'   => null,
         'note'     => '', //支付密钥填写说明
@@ -47,10 +64,12 @@ class bepusdt_plugin
         global $siteurl, $channel, $order, $conf;
 
         $parameter = [
-            'address'      => trim($channel['appsecret']),
-            'trade_type'   => trim($channel['appid']),
+            'address'      => trim($channel['address']),
+            'trade_type'   => $order['typename'],
             'order_id'     => TRADE_NO,
             'name'         => $order['name'],
+            'timeout'      => intval($channel['timeout']),
+            'rate'         => strval($channel['rate']),
             'amount'       => $order['realmoney'],
             'notify_url'   => $conf['localurl'] . 'pay/notify/' . TRADE_NO . '/',
             'redirect_url' => $siteurl . 'pay/return/' . TRADE_NO . '/',
@@ -62,7 +81,7 @@ class bepusdt_plugin
         $data = self::_post($url, $parameter);
         if (!is_array($data)) {
 
-            return ['type' => 'error', 'msg' => '请求失败，请检查配置是否正确！'];
+            return ['type' => 'error', 'msg' => '请求失败，请检查服务器是否能正常请求 BEpusdt 网关！'];
         }
 
         if ($data['status_code'] != 200) {
