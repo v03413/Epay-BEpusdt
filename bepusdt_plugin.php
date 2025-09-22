@@ -47,7 +47,7 @@ class bepusdt_plugin
             'timeout' => [
                 'name' => '订单超时',
                 'type' => 'input',
-                'note' => '可以留空 推荐填写 1200',
+                'note' => '可以留空 填写整数(单位秒)、推荐 1200',
             ],
             'rate'    => [
                 'name' => '订单汇率',
