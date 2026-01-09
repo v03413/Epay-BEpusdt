@@ -4,30 +4,32 @@ class bepusdt_plugin
 {
     public static $info = [
         'name'     => 'bepusdt',
-        'showname' => 'BEpusdt USDT/USDC 个人收款',
+        'showname' => 'BEpusdt 个人加密货币收款',
         'author'   => 'V03413',
         'link'     => 'https://github.com/v03413/BEpusdt',
         'types'    => [
             // 此列表可能存在变动，以此为准 https://github.com/v03413/BEpusdt/blob/main/docs/trade-type.md
             'tron.trx',
+            'bsc.bnb',
+            'ethereum.eth',
             'usdt.trc20',
             'usdc.trc20',
-            'usdt.erc20',
-            'usdc.erc20',
             'usdt.polygon',
             'usdc.polygon',
-            'usdt.bep20',
-            'usdc.bep20',
-            'usdt.aptos',
-            'usdc.aptos',
-            'usdt.solana',
-            'usdc.solana',
-            'usdt.xlayer',
-            'usdc.xlayer',
             'usdt.arbitrum',
             'usdc.arbitrum',
-            'usdt.plasma',
+            'usdt.erc20',
+            'usdc.erc20',
+            'usdt.bep20',
+            'usdc.bep20',
+            'usdt.xlayer',
+            'usdc.xlayer',
             'usdc.base',
+            'usdt.solana',
+            'usdc.solana',
+            'usdt.aptos',
+            'usdc.aptos',
+            'usdt.plasma',
         ],
         'inputs'   => [
             'appurl'  => [
@@ -55,6 +57,17 @@ class bepusdt_plugin
                 'type' => 'input',
                 'note' => '可以留空 例如：7.4 ~1.02 ~0.98（不明白切勿乱填）',
             ],
+            'fiat'    => [
+                'name'    => '交易法币',
+                'type'    => 'select',
+                'options' => [
+                    'CNY' => '人民币 (CNY)',
+                    'USD' => '美元 (USD)',
+                    'EUR' => '欧元 (EUR)',
+                    'GBP' => '英镑 (GBP)',
+                    'JPY' => '日元 (JPY)',
+                ],
+            ],
         ],
         'select'   => null,
         'note'     => '', //支付密钥填写说明
@@ -64,18 +77,18 @@ class bepusdt_plugin
     {
         global $siteurl, $channel, $order, $conf;
 
-        $parameter = [
+        $parameter              = [
+            'fiat'         => trim($channel['fiat']),
             'address'      => trim($channel['address']),
             'trade_type'   => $order['typename'],
             'order_id'     => TRADE_NO,
             'name'         => $order['name'],
             'timeout'      => intval($channel['timeout']),
             'rate'         => strval($channel['rate']),
-            'amount'       => $order['realmoney'],
+            'amount'       => floatval($order['realmoney']),
             'notify_url'   => $conf['localurl'] . 'pay/notify/' . TRADE_NO . '/',
             'redirect_url' => $siteurl . 'pay/return/' . TRADE_NO . '/',
         ];
-
         $parameter['signature'] = self::_toSign($parameter, $channel['appkey']);
 
         $url  = trim($channel['appurl']) . 'api/v1/order/create-transaction';
