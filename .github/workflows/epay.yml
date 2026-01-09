@@ -1,0 +1,33 @@
+name: Sync Plugin to Epay Repository
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "bepusdt_plugin.php"
+    workflow_dispatch:
+jobs:
+    sync-file:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout source repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 1
+            - name: Checkout target repository
+              uses: actions/checkout@v4
+              with:
+                  repository: v03413/Epay
+                  token: ${{ secrets.GH_TOKEN }}
+                  path: target-repo
+                  fetch-depth: 1
+            - name: Copy and overwrite file
+              run: |
+                  cp -f bepusdt_plugin.php target-repo/plugins/bepusdt/bepusdt_plugin.php
+            - name: Commit and push changes
+              working-directory: target-repo
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git add plugins/bepusdt/bepusdt_plugin.php
+                  git diff --quiet && git diff --staged --quiet || (git commit -m "chore: sync bepusdt_plugin.php from Epay-BEpusdt" && git push)
